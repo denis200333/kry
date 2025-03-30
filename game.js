@@ -1,8 +1,9 @@
 // Debug logging
-console.log('Inicjalizacja gry w kry v0.02...');
+console.log('Inicjalizacja gry w kry v0.03...');
+console.log('Odświeżono plik JS - odśwież stronę aby zobaczyć zmiany (Ctrl+F5)');
 
 // Wersja gry
-const GAME_VERSION = '0.02';
+const GAME_VERSION = '0.03';
 
 // Pobieranie elementów
 const canvas = document.getElementById('gameCanvas');
@@ -135,20 +136,31 @@ function checkBounce(pos, dir) {
     const newX = pos.x + dir.dx;
     const newY = pos.y + dir.dy;
     
+    console.log('Sprawdzanie odbicia:');
+    console.log('Aktualna pozycja:', pos);
+    console.log('Nowa pozycja:', {x: newX, y: newY});
+    console.log('Kierunek ruchu:', dir);
+    console.log('Ostatni typ odbicia:', gameState.lastBounceType);
+    
     // Sprawdź odbicie od ściany (bandy)
     if (newX < 0 || newX >= GRID_COLS || newY < 0 || newY >= GRID_ROWS) {
+        console.log('Wykryto kolizję z bandą!');
         // Jeśli to nie jest bramka, to jest odbicie
         if (!((newX === goals.player1.x && newY === goals.player1.y) ||
               (newX === goals.player2.x && newY === goals.player2.y))) {
             // Sprawdź czy poprzednie odbicie nie było od krawędzi
             if (gameState.lastBounceType !== 'border') {
-                console.log('Odbicie od bandy!');
+                console.log('✅ Odbicie od bandy dozwolone!');
+                console.log('Pozycja odbicia:', {x: newX, y: newY});
                 gameState.lastBounceType = 'border';
                 return true;
             } else {
-                console.log('Nie można wykonać kolejnego odbicia od bandy!');
+                console.log('❌ Nie można wykonać kolejnego odbicia od bandy!');
+                console.log('Poprzednie odbicie było od:', gameState.lastBounceType);
                 return false;
             }
+        } else {
+            console.log('Wykryto bramkę - nie liczymy jako odbicie');
         }
     }
 
@@ -160,29 +172,43 @@ function checkBounce(pos, dir) {
                (move.to.x === newX && move.to.y === newY);
     });
 
+    console.log('Sprawdzanie punktu:');
+    console.log('Czy punkt na krawędzi:', isBorderPoint);
+    console.log('Czy punkt już istnieje:', hasPointInNewPosition);
+
     if (hasPointInNewPosition || isBorderPoint) {
         // Jeśli to punkt na krawędzi, sprawdź czy poprzednie odbicie nie było od krawędzi
         if (isBorderPoint && gameState.lastBounceType === 'border') {
-            console.log('Nie można wykonać kolejnego odbicia od krawędzi!');
+            console.log('❌ Nie można wykonać kolejnego odbicia od krawędzi!');
+            console.log('Poprzednie odbicie było od:', gameState.lastBounceType);
             return false;
         }
         
-        console.log('Odbicie od punktu!');
+        console.log('✅ Odbicie od punktu dozwolone!');
+        console.log('Pozycja odbicia:', {x: newX, y: newY});
         gameState.lastBounceType = isBorderPoint ? 'border' : 'point';
         return true;
     }
 
+    console.log('Brak odbicia');
     return false;
 }
 
 // Funkcja wykonująca ruch
 function makeMove(direction) {
+    console.log('\n=== Wykonywanie ruchu ===');
+    console.log('Gracz:', gameState.currentPlayer);
+    console.log('Aktualna pozycja:', gameState.currentPosition);
+    console.log('Kierunek ruchu:', direction);
+    
     const newX = gameState.currentPosition.x + direction.dx;
     const newY = gameState.currentPosition.y + direction.dy;
     
     // Sprawdź czy jest gol
     if ((newX === goals.player1.x && newY === goals.player1.y) ||
         (newX === goals.player2.x && newY === goals.player2.y)) {
+        console.log('🎯 GOL!');
+        console.log('Pozycja gołu:', {x: newX, y: newY});
         // Zapisz ostatni ruch przed golem
         gameState.moves.push({
             from: {...gameState.currentPosition},
@@ -202,6 +228,7 @@ function makeMove(direction) {
     
     // Sprawdź odbicie przed zapisaniem ruchu
     const willBounce = checkBounce({...gameState.currentPosition}, direction);
+    console.log('Czy będzie odbicie:', willBounce);
     
     // Zapisz ruch
     gameState.moves.push({
@@ -215,6 +242,9 @@ function makeMove(direction) {
     
     // Obsłuż odbicie
     if (willBounce) {
+        console.log('🔄 Wykonano odbicie!');
+        console.log('Nowa pozycja:', gameState.currentPosition);
+        console.log('Liczba odbić:', gameState.bounces);
         gameState.bounces++;
         bouncesElement.textContent = gameState.bounces;
         statusElement.textContent = 'Odbicie! Możesz wykonać dodatkowy ruch';
@@ -234,6 +264,8 @@ function makeMove(direction) {
             return;
         }
     } else {
+        console.log('⏭️ Zmiana tury');
+        console.log('Nowy gracz:', gameState.currentPlayer);
         // Zmień turę
         gameState.currentPlayer = gameState.currentPlayer === 1 ? 2 : 1;
         gameState.bounces = 0;
@@ -247,6 +279,8 @@ function makeMove(direction) {
     
     // Aktualizuj wynik
     scoreElement.textContent = `Wynik: ${gameState.score.player1} - ${gameState.score.player2}`;
+    
+    console.log('=== Koniec ruchu ===\n');
 }
 
 // Funkcja obsługująca input
