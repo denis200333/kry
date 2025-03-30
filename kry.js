@@ -1,17 +1,26 @@
 // Debug logging
-console.log('Inicjalizacja gry w kry v0.03...');
+console.log('=== Inicjalizacja gry w kry v0.04 ===');
 console.log('Odświeżono plik JS - odśwież stronę aby zobaczyć zmiany (Ctrl+F5)');
+console.log('Data uruchomienia:', new Date().toLocaleString());
 
 // Wersja gry
-const GAME_VERSION = '0.03';
+const GAME_VERSION = '0.04';
 
 // Pobieranie elementów
 const canvas = document.getElementById('gameCanvas');
+console.log('Canvas zainicjalizowany:', canvas ? 'TAK' : 'NIE');
 const ctx = canvas.getContext('2d');
+console.log('Context 2D zainicjalizowany:', ctx ? 'TAK' : 'NIE');
 const scoreElement = document.getElementById('score');
 const turnElement = document.getElementById('turn');
 const bouncesElement = document.getElementById('bounces');
 const statusElement = document.getElementById('status');
+console.log('Elementy UI załadowane:', {
+    score: !!scoreElement,
+    turn: !!turnElement,
+    bounces: !!bouncesElement,
+    status: !!statusElement
+});
 
 // Ustawienia canvas i siatki
 canvas.width = 600;
@@ -19,6 +28,13 @@ canvas.height = 400;
 const GRID_SIZE = 40;
 const GRID_COLS = Math.floor(canvas.width / GRID_SIZE);
 const GRID_ROWS = Math.floor(canvas.height / GRID_SIZE);
+console.log('Konfiguracja planszy:', {
+    width: canvas.width,
+    height: canvas.height,
+    gridSize: GRID_SIZE,
+    columns: GRID_COLS,
+    rows: GRID_ROWS
+});
 
 // Stan gry
 const gameState = {
@@ -200,6 +216,12 @@ function makeMove(direction) {
     console.log('Gracz:', gameState.currentPlayer);
     console.log('Aktualna pozycja:', gameState.currentPosition);
     console.log('Kierunek ruchu:', direction);
+    console.log('Stan gry:', {
+        bounces: gameState.bounces,
+        score: gameState.score,
+        movesCount: gameState.moves.length,
+        possibleMoves: gameState.possibleMoves.length
+    });
     
     const newX = gameState.currentPosition.x + direction.dx;
     const newY = gameState.currentPosition.y + direction.dy;
@@ -285,7 +307,12 @@ function makeMove(direction) {
 
 // Funkcja obsługująca input
 function handleInput() {
+    console.log('\n=== Obsługa inputu ===');
+    console.log('Stan klawiszy:', keys);
+    console.log('Wybrany kierunek:', gameState.selectedDirection);
+    
     if (keys.KeyR) {
+        console.log('🔄 Reset gry');
         resetGame(true);
         return;
     }
@@ -479,6 +506,14 @@ function drawPossibleMoves() {
 
 // Funkcja resetująca grę
 function resetGame(fullReset = true) {
+    console.log('\n=== Reset gry ===');
+    console.log('Pełny reset:', fullReset);
+    console.log('Stan przed resetem:', {
+        position: gameState.currentPosition,
+        moves: gameState.moves.length,
+        score: gameState.score,
+        currentPlayer: gameState.currentPlayer
+    });
     gameState.currentPosition = {
         x: Math.floor(GRID_COLS / 2),
         y: Math.floor(GRID_ROWS / 2)
@@ -499,6 +534,12 @@ function resetGame(fullReset = true) {
     turnElement.textContent = `Gracz ${gameState.currentPlayer}`;
     scoreElement.textContent = `Wynik: ${gameState.score.player1} - ${gameState.score.player2}`;
     statusElement.textContent = 'Nowa gra';
+    console.log('Stan po resecie:', {
+        position: gameState.currentPosition,
+        moves: gameState.moves.length,
+        score: gameState.score,
+        currentPlayer: gameState.currentPlayer
+    });
 }
 
 // Funkcja resetująca piłkę
@@ -536,7 +577,9 @@ document.getElementById('controls').innerHTML = `
 `;
 
 // Inicjalizacja gry
+console.log('\n=== Inicjalizacja gry ===');
 resetGame();
 gameLoop();
 
-console.log('Gra w kry została uruchomiona!'); 
+console.log('✨ Gra w kry v0.04 została uruchomiona!');
+console.log('Możesz rozpocząć grę!'); 
